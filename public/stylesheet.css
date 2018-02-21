@@ -12,16 +12,22 @@ h3 {
 }
 
 #petition {
-    /* border: solid; */
     width: 950px;
     margin-left: 100px;
 }
 
 canvas {
-    border: solid white 2px;
+    border: solid 1px #cccccc;
     margin-top: 10px;
     margin-bottom: 10px;
+    border-radius: 5px;
+    background: white;
 }
+
+canvas:hover {
+    cursor: crosshair;
+}
+
 #information {
     background-color: rgb(45, 46, 55);
     width: 100%;
@@ -42,4 +48,26 @@ canvas {
 #form {
     margin-left: 100px;
     margin-bottom: 100px;
+}
+
+input {
+    height: 30px;
+    width: 287px;
+    font-size: 20px;
+    /* color: grey; */
+    padding: 5px;
+    border-radius: 5px;
+    border: solid 1px #cccccc;
+}
+
+#button {
+    width: 150px;
+    background-color: rgb(45, 46, 55);
+    color: #f6f6f6;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#button:hover {
+    cursor: pointer;
 }

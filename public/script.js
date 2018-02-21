@@ -1,14 +1,35 @@
-// This page requires client-side javascript.
-// Need javascript for event handling, its simple.
-// It's not different than first event exercise we did with the box following the mouse.
-// This code needs to detect mouse down on the canvas.  When the mouse goes down, star tlistening for mouse move.
-// As mouse move on the canvas, draw a line (use mouse to). Need offset x and offset y on the mouse down.
-// THen when move mouse, detect mouse move and overwrite the mouse variables where it used to be to where it was.
-// Draw a line from where it used to be to where it is now.
-// when mouseup, stop drawing.
-// when mouse goes down, start tracking mouse move, and stop tracking mouse move when mouse up.
-// keep track of where the mouse used to be.
-//
+var canv = $("canvas");
+var ctx = canv[0].getContext("2d");
+var draw;
+var mouseX;
+var mouseY;
+
+canv.on("mousedown", function(e) {
+    draw = true;
+    // console.log("mousedown");
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
+    console.log(mouseX, mouseY);
+});
+
+canv.on("mousemove", function(e) {
+    if (!draw) {
+        return;
+    }
+    // console.log("mousemove");
+    ctx.moveTo(mouseX, mouseY);
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
+    ctx.lineTo(mouseX, mouseY);
+    ctx.stroke();
+});
+
+canv.on("mouseup", function(e) {
+    // console.log("mouseup");
+    draw = false;
+    $('input[name="sig"]').val(canv[0].toDataURL());
+});
+
 // when the user clicks submit, we want to put a new row in our database.
 //
 // var c = document.querySelector('canvas');
