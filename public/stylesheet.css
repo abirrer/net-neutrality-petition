@@ -50,6 +50,11 @@ canvas:hover {
     margin-bottom: 100px;
 }
 
+#form p {
+    color: rgb(157, 33, 43);
+    font-style: italic;
+}
+
 input {
     height: 30px;
     width: 287px;

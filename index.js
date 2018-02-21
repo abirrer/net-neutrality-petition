@@ -30,14 +30,12 @@ app.get("/petition", function(req, res) {
 
 app.post("/petition", function(req, res) {
     if (!req.body.first || !req.body.last || !req.body.sig) {
-        res.render('petition', {
-            error.true
-        });
+        res.render("petition", { error: true });
     } else {
         signPetition(req.body.first, req.body.last, req.body.sig) // this function should make a db query that submits this to the database.
-        .then(function() {
-            res.redirect("/thankyou");
-        });
+            .then(function() {
+                res.redirect("/thankyou");
+            });
     }
 });
 

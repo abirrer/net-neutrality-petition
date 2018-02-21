@@ -31,15 +31,8 @@ var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/signatures`);
 //     });
 
 function signPetition(first, last, signature) {
-    db
-        .query(
-            `INSERT INTO signatures (first, last, signature) VALUES (first, last, signature)`
-        )
-        .then(() => db.query(`SELECT * FROM signature`))
-        .then(function(results) {
-            console.log(results.rows);
-        })
-        .catch(function(err) {
-            console.log(err);
-        });
+    return db.query(
+        `INSERT INTO signatures (first, last, signature) VALUES ($1, $2, $3)`,
+        [first, last, signature]
+    );
 }
