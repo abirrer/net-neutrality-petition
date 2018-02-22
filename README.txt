@@ -157,3 +157,66 @@ reddis is a good thing for this.
 Today we will use a hybrid approach called cookie sessions.
 The cookie shoudl get the ID of the signature, can't put the full signature.
 We can look up the signature with the ID from the cookie.
+
+session will contain a json stringified object { signatureID: 11 } but it is base64 encoded.
+session.sig is a signed cookie, to authenticate it.  It's called a HMAC -hash.
+a cryptographic hash is a jumbled up string that is completely unrecognizable and impossible to go back to the original
+Always generates the same hash for the same string.  But impossible to decode.
+
+how to put data in the sessino cookie
+
+app.get('*', (req, res) => {
+    console.log(req.session.signatureID);
+    req.session.signatureID = 10;
+    res.sendStatus(200)
+})
+
+
+What you want to do is do the setup stuff from github.
+put the secret in a secrets.json file and then reference it in index.
+In your post route when user has successfully submitted their signature.
+Delete the res.cookie("hasSigned", "true").  We don't need this anymore.
+ALso don't need req.cookies to read the cookie.
+
+when we want to set cookie,
+do
+req.session.signatureId = id of signature which is result.rows[0].id
+
+then we do if (req.session.signatureID) {
+    // then do the rest.
+}
+
+then in db.js, we need to get the id:
+
+change the query to get back (from an insert)
+
+function signPetition(first, last, signature) {
+    return db.query(
+        `INSERT INTO signatures (first, last, signature) VALUES ($1, $2, $3) RETURNING id`,
+        [first, last, signature]
+    );
+}
+
+then we will get back the id:.
+
+Then set this to the req.session.signatureId.
+
+When the post happens, you need to modify the thank you route which just now res.renders.
+It first has to do a db.query first before rendering.
+db query requres req.session.signatureId so Select signature from Signatures where {req.session.signatureId}
+
+then pass that to render template.
+
+res.render('thanks', {
+    sig: result.rows[0].sig
+})
+
+in template do <img src="{{sig}}">
+
+* set up cookie session middleware
+* then change post route from setting cookie with res.cookie.  set signature id in res.session.
+* then thankyou route needs to change. first do database query then render.
+the database query needs signatureid from session.
+then pass it to the template and render it.
+
+then change where the person has already signed.  Change it to req.session.signatureId before redirecting.
