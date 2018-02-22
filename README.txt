@@ -132,3 +132,28 @@ might want a layout file so you don;t have to repeat all that stuff.
 Maybe some partials based on your design. for repeating elements (like images, etc.)
 
 Tomorrow morning, when we talk about Part 2, many of us will be working on Part 1.
+
+
+//Part 2 Notes
+Just a change to the thank you page, to show the user their signature they signed.
+
+The object will look like this.
+{
+    user1: {
+        signature: 'data'
+    },
+    user2: {
+        signature: 'data'
+    }
+}
+put the session id in the cookie, then put the session data on the server,
+and then pull it back up based on session id.
+Need a place to store this data.
+this is not what postgres is for. It's only for permanent stuff, and involved queries.
+
+This is something you only keep around when the user visits the site. but when they leave the sight, then have no interest in keeping it.
+reddis is a good thing for this.
+
+Today we will use a hybrid approach called cookie sessions.
+The cookie shoudl get the ID of the signature, can't put the full signature.
+We can look up the signature with the ID from the cookie.
