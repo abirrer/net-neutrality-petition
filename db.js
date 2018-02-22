@@ -3,6 +3,15 @@ var { dbUser, dbPass } = require("./secrets");
 
 var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/signatures`);
 
+function signPetition(first, last, signature) {
+    return db.query(
+        `INSERT INTO signatures (first, last, signature) VALUES ($1, $2, $3)`,
+        [first, last, signature]
+    );
+}
+
+exports.signPetition = signPetition;
+
 // function getCityInfo(city, country) {
 //     db
 //         .query("SELECT city FROM cities WHERE city = $1 AND country = $2", [
@@ -29,10 +38,3 @@ var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/signatures`);
 //     .catch(function(err) {
 //         console.log(err);
 //     });
-
-function signPetition(first, last, signature) {
-    return db.query(
-        `INSERT INTO signatures (first, last, signature) VALUES ($1, $2, $3)`,
-        [first, last, signature]
-    );
-}

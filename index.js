@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const hb = require("express-handlebars");
 const fs = require("fs");
+const { signPetition } = require("./db");
 
 //set up for handlebars
 
@@ -14,45 +15,56 @@ app.set("view engine", "handlebars");
 
 app.use(cookieParser());
 
+app.use(express.static(__dirname + "/public")); // includes stylesheet, javascript, images, etc.
+
+app.use(function(req, res, next) {
+    if (!req.cookies.signed && req.url != "/petition") {
+        res.redirect("/petition");
+    } else {
+        next();
+    }
+});
+
 app.use(
     bodyParser.urlencoded({
         extended: false
     })
 );
 
-app.use(express.static(__dirname + "/public")); // includes stylesheet, javascript, images, etc.
-
 //routes
 
 app.get("/petition", function(req, res) {
+    if (req.cookies.signed) {
+        res.redirect("/thankyou");
+        return;
+    }
     res.render("petition");
 });
 
 app.post("/petition", function(req, res) {
+    if (req.cookies.signed) {
+        res.redirect("/thankyou");
+        return;
+    }
     if (!req.body.first || !req.body.last || !req.body.sig) {
         res.render("petition", { error: true });
     } else {
         signPetition(req.body.first, req.body.last, req.body.sig) // this function should make a db query that submits this to the database.
-            .then(function() {
+            .then(() => {
+                res.cookie("signed", "true");
+            })
+            .then(() => {
                 res.redirect("/thankyou");
             });
     }
 });
 
 app.get("/thankyou", (req, res) => {
-    // if (check cookie) {
-    //     res.redirect('/petition')
-    // } else {
     res.render("thankyou");
-    // }
-}); // needs to be its own page so we can redirect to it many times.
+});
 
 app.get("/signers", (req, res) => {
-    // if (check cookie) {
-    //     res.redirect('/petition')
-    // } else {
     res.render("signers");
-    // }
 });
 
 app.listen(8080, () => console.log("I'm listening."));
