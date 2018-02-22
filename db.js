@@ -20,9 +20,14 @@ function getTotal() {
     return db.query(`SELECT COUNT (signature) FROM signatures`);
 }
 
+function getAllSigs() {
+    return db.query("SELECT first, last FROM signatures");
+}
+
 exports.signPetition = signPetition;
 exports.getSig = getSig;
 exports.getTotal = getTotal;
+exports.getAllSigs = getAllSigs;
 
 // function getCityInfo(city, country) {
 //     db

@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const hb = require("express-handlebars");
 const fs = require("fs");
-const { signPetition, getSig, getTotal } = require("./db");
+const { signPetition, getSig, getTotal, getAllSigs } = require("./db");
 var cookieSession = require("cookie-session");
 var { secret } = require("./secrets");
 
@@ -81,7 +81,11 @@ app.get("/thankyou", (req, res) => {
 });
 
 app.get("/signers", (req, res) => {
-    res.render("signers");
+    getAllSigs().then(result => {
+        res.render("signers", {
+            signature: result.rows
+        });
+    });
 });
 
 app.listen(8080, () => console.log("I'm listening."));
