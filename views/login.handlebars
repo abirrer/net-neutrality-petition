@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Protect Net Neutrality</title>
+        <link rel="stylesheet" href="/stylesheet.css">
+    </head>
+    <body>
+        <header id="login-header">
+            <h2>Welcome Back!</h3>
+        </header>
+
+        <div id="login-form">
+            <p>Please log in.</p>
+            {{#if error}}
+                {{> error}}
+            {{/if}}
+            <form method="POST">
+                <input type="text" name="email" placeholder="Email Address">
+                <input type="password" name="password" placeholder="Password">
+                <input id="button" type="submit" value="Log In">
+            </form>
+        </div>
+
+        <!-- <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script> -->
+        <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="script.js"></script>
+    </body>
+</html>

@@ -220,3 +220,53 @@ the database query needs signatureid from session.
 then pass it to the template and render it.
 
 then change where the person has already signed.  Change it to req.session.signatureId before redirecting.
+
+//Notes from 26 February: More SQL and Part 4
+
+//COMMANDS
+how to create a database in bash: createdb <db_name>
+CREATE TABLE <table_name (...);
+to run a file: psql <table_name> -f <path/to/file_name.js>
+psql -l
+/dt
+/du
+
+in postgres to set up foreign key "REFERENCES [tablename](column name)" so example: REFERENCES actors(id);
+Order of dropping tables depends when you have these foreign key dependencies.
+
+Rule for writing code: be obnoxiously consistent with naming things.
+
+Every JOIN needs an ON clause need to know where the rows from table B will join with the rows of Table A
+
+
+//Notes on Part 4
+Register and then go to a second page to add additional details.
+Make a new table --> all fields are allowed to be null.
+Add additional profile information in the signers page, include link to homepage.
+City name should also be links, when the links are clicked, users are directed to a signers page that is filtered to just include signers from that city.
+
+Post request and get request for the additional information page.
+
+need to use:
+
+/petition/signers/:user_city
+const city = req.params.user_city
+city === "berlin"
+
+have to write a query in a get request. you Want it when you load the page, so you use get not post.
+
+app.get("petition/signers/:user_city", (req, res) => {
+    //query my db for all the signers
+    //who have the city equal to whatever
+    //req.params.city is.
+    //In the db function, need to join tables.
+})
+
+addUserProfile(req.session.userId, name) //this goes in the index.js
+
+//this goes in to the db query page
+function addUserProfile(userID, name) {
+    const q = "INSERT INTO user_profiles (user_id, name)
+        VALUES ($1, $2)"
+    const params = [userId, name]
+}

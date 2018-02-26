@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Protect Net Neutrality</title>
+        <link rel="stylesheet" href="/stylesheet.css">
+    </head>
+    <body>
+        <header id="petition">
+            <h1>Net Neutrality is in Danger.</h1>
+            <h3>Act Now.</h3>
+        </header>
+
+        <div id="information">
+            <h3>Why should you care?</h3>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/HqXKEgTYZBQ?rel=0&amp;showinfo=0" frameborder="0" allow="encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <div id="registration-form">
+            <h3>Join the thousands of others <br>who want the internet to be <br>open and accessible.</h3>
+            {{#if error}}
+                {{> error}}
+            {{/if}}
+            <form method="POST">
+                <input type="text" name="first" placeholder="First Name">
+                <input type="text" name="last" placeholder="Last Name">
+                <input type="email" name="email" placeholder="Email Address">
+                <input type="password" name="password" placeholder="Password">
+                <input id="button" type="submit" value="Sign Up For Free">
+            </form>
+            <p>or <b><a href="/login">Sign In</a></b></p>
+        </div>
+
+        <!-- <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script> -->
+        <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="script.js"></script>
+    </body>
+</html>
