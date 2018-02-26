@@ -36,13 +36,19 @@ function getPassword(email) {
 }
 
 function getAllSigsFiltered(city) {
-    return db.query();
+    return db.query(
+        `SELECT users.first, users.last, user_profiles.age, user_profiles.city, user_profiles.website FROM users
+        JOIN user_profiles
+        ON users.id = user_id
+        WHERE city = $1`,
+        [city]
+    );
 }
 
-function addUserProfile(age, city, website) {
+function addUserProfile(age, city, website, user_id) {
     return db.query(
-        `INSERT INTO user_profiles (age, city, website) VALUES ($1, $2, $3) RETURNING id`,
-        [age, city, website]
+        `INSERT INTO user_profiles (age, city, website, user_id) VALUES ($1, $2, $3, $4)`, //do I need to return something here?
+        [age, city, website, user_id]
     );
 }
 

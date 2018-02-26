@@ -5,7 +5,6 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const hb = require("express-handlebars");
-const https = require("https");
 const {
     signPetition,
     getSig,
@@ -17,10 +16,11 @@ const {
     addUserProfile
 } = require("./db");
 
-var cookieSession = require("cookie-session");
-var { secret } = require("./secrets");
+const cookieSession = require("cookie-session");
+const { secret } = require("./secrets");
 const { hashPassword, checkPassword } = require("./hash");
-var bcrypt = require("bcryptjs");
+// const bcrypt = require("bcryptjs");
+// const https = require("https");
 
 //set up for handlebars
 
@@ -43,14 +43,14 @@ app.use(express.static(__dirname + "/public")); // includes stylesheet, javascri
 
 app.use(function(req, res, next) {
     if (!req.url != "/" || req.url != "/login") {
-        if (!req.session.user && req.url != "/") {
+        if (!req.session.userID && req.url != "/") {
             res.redirect("/");
         } else {
             next();
         }
     } else {
-        if (req.session.user) {
-            res.redirect("/petition");
+        if (req.session.userID) {
+            res.redirect("/petition"); //or do we make it res.redirect("profile");
         } else {
             next();
         }
@@ -90,7 +90,7 @@ app.post("/", (req, res) => {
             })
             .then(() => {
                 getPassword(req.body.email).then(result => {
-                    req.session.user = {
+                    req.session.userID = {
                         id: result.row[0].id,
                         first: result.row[0].first,
                         last: result.row[0].last
@@ -116,7 +116,7 @@ app.post("/login", (req, res) => {
         }); //need to update that error shows and test.
     } else {
         getPassword(req.body.email).then(result => {
-            req.session.user = {
+            req.session.userID = {
                 id: result.rows[0].id,
                 first: result.rows[0].first,
                 last: result.rows[0].last
@@ -136,14 +136,19 @@ app.post("/login", (req, res) => {
     }
 });
 
-//profile page
+//create profile page
 
 app.get("/profile", (req, res) => {
     res.render("profile");
 });
 
 app.post("/profile", (req, res) => {
-    addUserProfile(req.body.age, req.body.city, req.body.website).then(() => {
+    addUserProfile(
+        req.body.age,
+        req.body.city,
+        req.body.website,
+        req.session.userID
+    ).then(() => {
         res.redirect("/petition");
     });
 });
@@ -202,7 +207,7 @@ app.get("/signers", (req, res) => {
 //city page
 
 app.get("/signers/:city", (req, res) => {
-    getAllSigsFiltered().then(result => {
+    getAllSigsFiltered(req.params.city).then(result => {
         res.render("city", {
             city: req.params.city,
             signature: result.rows
