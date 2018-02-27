@@ -52,7 +52,7 @@ app.use(function(req, res, next) {
         }
     } else {
         if (req.session.user) {
-            res.redirect("/petition"); //or do we make it res.redirect("profile");
+            res.redirect("/profile"); //or do we make it res.redirect("profile");
         } else {
             next();
         }
@@ -98,7 +98,7 @@ app.post("/", (req, res) => {
                 };
             })
             .then(() => {
-                res.redirect("/petition");
+                res.redirect("/profile");
             })
             .catch(error => {
                 console.log(
@@ -127,7 +127,7 @@ app.post("/login", (req, res) => {
                 first: result.rows[0].first,
                 last: result.rows[0].last
             };
-            checkPassword(req.body.password, result.rows[0].password)
+            checkPassword(req.body.password, result.rows[0].hashed_password)
                 .then(result => {
                     if (result == true) {
                         res.redirect("/petition");

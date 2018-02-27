@@ -1,4 +1,4 @@
-/* css for main/petitoin page */
+/* css for main/petition page */
 
 html {
     background-color: #f6f6f6;
@@ -13,7 +13,7 @@ h3 {
     font-size: 80px;
 }
 
-#petition {
+#registration {
     width: 950px;
     margin-left: 100px;
 }
@@ -47,12 +47,17 @@ canvas:hover {
     padding-top: 40px;
 }
 
-#form {
+#registration-form {
     margin-left: 100px;
     margin-bottom: 100px;
 }
 
-#form p {
+#registration-form form {
+    /* border: solid; */
+    width: 700px;
+}
+
+#error {
     color: rgb(157, 33, 43);
     font-style: italic;
 }
@@ -64,6 +69,7 @@ input {
     padding: 5px;
     border-radius: 5px;
     border: solid 1px #cccccc;
+    margin-bottom: 10px;
 }
 
 #button {
@@ -115,7 +121,63 @@ img {
     margin-left: 100px;
 }
 
+.signature-box {
+    /* border: solid; */
+    display: inline-flex;
+    width: 90%;
+    height: 120px;
+    margin-left: 100px;
+}
+
+.signature-box img {
+    /* border: solid; */
+    height: 100px;
+    width: 100px;
+}
+
+.siganture-box_info {
+    margin-left: 10px;
+    /* border: solid; */
+    width: 400px;
+    height: 100px;
+}
+
+.siganture-box_info h4 {
+    margin-top: 0px;
+    font-size: 30px;
+}
 /* #signers-header img {
     height: 50px;
     width: 50px;
 } */
+
+/* css for login */
+#login-header {
+    margin-left: 100px;
+    width: 100%;
+}
+
+#login-form {
+    margin-left: 100px;
+    width: 700px;
+    /* border: solid; */
+}
+
+#profile-header {
+    margin-left: 100px;
+    width: 100%;
+}
+
+#profile-form {
+    margin-left: 100px;
+    width: 400px;
+    /* border: solid; */
+}
+
+#petition-form {
+    margin-left: 100px;
+}
+
+#city-header {
+    margin-left: 100px;
+}

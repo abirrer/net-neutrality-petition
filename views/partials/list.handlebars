@@ -1,6 +1,9 @@
 {{#each signature}}
-    <div class="signature">
+    <div class="signature-box">
         <img src="/img/fist.png" alt="fist icon"></img>
-        <p>{{first}} {{last}} (Age: {{age}}, City: {{city}})</p>
+        <div class="siganture-box_info">
+            <h4><a href="{{website}}" target="_blank">{{first}} {{last}}</a></h4>
+            <p>(Age: {{age}}, City: <a href="/signers/{{city}}">{{city}}</a>)</p>
+        </div>
     </div>
 {{/each}}
