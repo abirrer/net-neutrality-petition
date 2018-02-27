@@ -15,14 +15,17 @@ const {
     getAllSigsFiltered,
     addUserProfile,
     getUserProfile,
-    deleteSignature
+    deleteSignature,
+    updateUserProfileTable,
+    updateUsersTableWithPass,
+    updateUsersTableNoPass
 } = require("./db");
 
 const cookieSession = require("cookie-session");
 const { secret } = require("./secrets");
 const { hashPassword, checkPassword } = require("./hash");
-// const bcrypt = require("bcryptjs");
-// const https = require("https");
+const bcrypt = require("bcryptjs");
+const https = require("https");
 
 //set up for handlebars
 
@@ -44,15 +47,15 @@ app.use(cookieParser());
 app.use(express.static(__dirname + "/public")); // includes stylesheet, javascript, images, etc.
 
 app.use(function(req, res, next) {
-    if (!req.url != "/" || req.url != "/login") {
-        if (!req.session.user && req.url != "/") {
+    if (!req.session.user) {
+        if (req.url != "/" && req.url != "/login") {
             res.redirect("/");
         } else {
             next();
         }
     } else {
-        if (req.session.user) {
-            res.redirect("/profile"); //or do we make it res.redirect("profile");
+        if (req.url == "/" || req.url == "/login") {
+            res.redirect("/petition");
         } else {
             next();
         }
@@ -155,7 +158,7 @@ app.get("/profile", (req, res) => {
 
 app.post("/profile", (req, res) => {
     addUserProfile(
-        req.body.age,
+        +req.body.age,
         req.body.city,
         req.body.website,
         req.session.user.id
@@ -189,13 +192,9 @@ app.post("/petition", function(req, res) {
     if (!req.body.sig) {
         res.render("petition", { error: true });
     } else {
-        signPetition(
-            req.session.user.first,
-            req.session.user.last,
-            req.body.sig,
-            req.session.user.id
-        ) // this function should make a db query that submits this to the database.
+        signPetition(req.body.sig, req.session.user.id) // this function should make a db query that submits this to the database.
             .then(result => {
+                console.log(result);
                 req.session.user.sigID = result.rows[0].id;
             })
             .then(() => {
@@ -223,15 +222,95 @@ app.get("/thankyou", (req, res) => {
     );
 });
 
+//delete signature on thank you page
+
+app.post("/thankyou", (req, res) => {
+    deleteSignature(req.session.user.id)
+        .then(() => {
+            delete req.session.user.sigID;
+        })
+        .then(() => {
+            res.redirect("/petition");
+        })
+        .catch(error => {
+            console.log(
+                "There was an error in the thankyou post request: ",
+                error
+            );
+        });
+});
+
 //edit profile pages
 
 app.get("/profile/edit", (req, res) => {
-    res.render("edit");
+    getUserProfile(req.session.user.id).then(result => {
+        console.log(result);
+        res.render("edit", {
+            first: result.rows[0].first,
+            last: result.rows[0].last,
+            email: result.rows[0].email,
+            password: "",
+            age: result.rows[0].age,
+            city: result.rows[0].city,
+            website: result.rows[0].website
+        });
+    });
 });
 
-// app.post("/profile/edit", (req, res) => {
-//
-// });
+app.post("/profile/edit", (req, res) => {
+    //need to set a promise.all to determine when the updateUserProfileTable and updateUsersTable are both complete.  Then send res.redirect("/profile/edit")
+    updateUserProfileTable(
+        req.body.age,
+        req.body.city,
+        req.body.website,
+        req.session.user.id
+    )
+        .then(() => {
+            res.redirect("/profile/edit");
+        })
+        .catch(error => {
+            console.log(
+                "There was an error in the profile edit post request: ",
+                error
+            );
+        });
+    if (!req.body.password) {
+        updateUsersTableNoPass(
+            req.body.first,
+            req.body.last,
+            req.body.email,
+            req.session.user.id
+        )
+            .then(() => {
+                res.redirect("/profile/edit");
+            })
+            .catch(error => {
+                console.log(
+                    "There was an error in the profile edit post request: ",
+                    error
+                );
+            });
+    } else {
+        hashPassword(req.body.password).then(hashedPass => {
+            updateUsersTableWithPass(
+                req.body.first,
+                req.body.last,
+                req.body.email,
+                hashedPass,
+                req.session.user.id
+            )
+                .then(() => {
+                    res.redirect("/profile/edit");
+                })
+                .catch(error => {
+                    console.log(
+                        "There was an error in the profile edit post request: ",
+                        error
+                    );
+                });
+        });
+    }
+});
 
 //signers page
 

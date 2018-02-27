@@ -3,10 +3,10 @@ var { dbUser, dbPass } = require("./secrets");
 
 var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/signatures`);
 
-function signPetition(first, last, signature, user_id) {
+function signPetition(signature, user_id) {
     return db.query(
-        `INSERT INTO signatures (first, last, signature, user_id) VALUES ($1, $2, $3, $4) RETURNING id`,
-        [first, last, signature, user_id]
+        `INSERT INTO signatures (signature, user_id) VALUES ($1, $2) RETURNING id`,
+        [signature, user_id]
     );
 }
 
@@ -50,43 +50,51 @@ function getAllSigsFiltered(city) {
 function addUserProfile(age, city, website, user_id) {
     return db.query(
         `INSERT INTO user_profiles (age, city, website, user_id) VALUES ($1, $2, $3, $4)`, //do I need to return something here?
-        [age, city, website, user_id]
+        [age || null, city || null, website || null, user_id]
     );
 }
 
 function getUserProfile(user_id) {
     return db.query(
-        `SELECT users.first, users.last, users.email, users.password, user_profiles.age, user_profiles.city, user_profiles.website FROM users
+        `SELECT users.first, users.last, users.email, users.hashed_password, user_profiles.age, user_profiles.city, user_profiles.website FROM users
         JOIN user_profiles
         ON users.id = user_profiles.user_id
-        WHERE id = $1`,
+        WHERE users.id = $1`,
         [user_id]
     );
 }
 
-// function updateUserProfile(
-//     first,
-//     last,
-//     email,
-//     password,
-//     age,
-//     city,
-//     website,
-//     user_id
-// ) {
-//     return db.query(
-//         `UPDATE users
-//         SET first = $1, last = $2, email = $3
-//         WHERE id = $4`,
-//         [first, last, email, user_id]
-//     );
-//     getUserProfile(age, city, website, user_id); //can't do this, but need to figure out another way
-// }
+function updateUserProfileTable(age, city, website, user_id) {
+    return db.query(
+        `UPDATE user_profiles
+        SET age = $1, city = $2, website = $3
+        WHERE user_id = $4`,
+        [age || null, city || null, website || null, user_id]
+    );
+}
+
+function updateUsersTableWithPass(first, last, email, hashed_password, id) {
+    return db.query(
+        `UPDATE users
+        SET first = $1, last = $2, email = $3, hashed_password = $4
+        WHERE id = $5`,
+        [first, last, email, hashed_password, id]
+    );
+}
+
+function updateUsersTableNoPass(first, last, email, id) {
+    return db.query(
+        `UPDATE users
+        SET first = $1, last = $2, email = $3
+        WHERE id = $4`,
+        [first, last, email, id]
+    );
+}
 
 function deleteSignature(user_id) {
     return db.query(
         `DELETE FROM signatures
-        WHERE id = $1`,
+        WHERE user_id = $1`,
         [user_id]
     );
 }
@@ -100,5 +108,7 @@ exports.getPassword = getPassword;
 exports.getAllSigsFiltered = getAllSigsFiltered;
 exports.addUserProfile = addUserProfile;
 exports.getUserProfile = getUserProfile;
-// exports.updateUserProfile = updateUserProfile;
+exports.updateUserProfileTable = updateUserProfileTable;
+exports.updateUsersTableWithPass = updateUsersTableWithPass;
+exports.updateUsersTableNoPass = updateUsersTableNoPass;
 exports.deleteSignature = deleteSignature;
