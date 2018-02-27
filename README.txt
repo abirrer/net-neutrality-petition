@@ -270,3 +270,97 @@ function addUserProfile(userID, name) {
         VALUES ($1, $2)"
     const params = [userId, name]
 }
+
+
+//Part 5 Notes
+
+need to do a join query from users and user profiles data.
+The password field is left blank.
+Age, City, Homepage are optional. so if they don't have a value, then display nothing.
+
+to update, we need a post request from this form.
+WE are updating 2 different tables, users and user profiles.
+WE need to run 2 update statements if necessary. It's a fat post request with lots of conditions to check for.
+One of those conditions is: if the user does not have a row in the user profiles table. since they didn't need to submit anything.
+If they don't have a row, then we do an insert query.
+If they do have a row, then we run an update query
+
+for query:
+
+UPDATE user_profiles
+    SET city = $1 //whatever we want to update
+    WHERE user_id = $2,
+    [userInputtedCity || null , req.session.user.id]
+
+INSERT INTO user_profiles
+    (city, age, url) VALUES ($1, $2, $3)
+    const params = [ userInputtedCity || null, age || null, url || null ]
+
+For resubmission of password:
+
+app.post("/profile/edit", (req, res) => {
+
+const { id } = req.session.user;
+const { first, last, email, password, age, city, url } = req.body;
+    or
+    req.body.first;
+    req.body.last;
+    req.body.email;
+    req.body.password;
+    req.body.age;
+    req.body.city;
+    req.body.url;
+
+    if (password === "") {
+        //skip the whole updating password thing
+        //aka don't do the update query
+    } else {
+        //update the password and run the hashPassword function and then save the hash.
+    }
+})
+
+Should be able to delete the signature.
+Add options to edit your profile
+and delete your signature.
+When they click the button it should be DELETE query in a post request for this.
+
+syntax for deleting is:
+
+DELETE FROM signatures WHERE user_id = $1
+[req.session.user.id]
+
+in index.js:
+Then reset req.session.user.sigID = null;
+or do delete req.session.user.sigID;
+
+on submit, just resubmit the first, last, email fields.
+
+
+examples of middleware:
+
+//only use this middleware for routes that require a sigID
+//like GET /signers, GET /thankyou, GET /signers/:city
+const checkForSigId = function(req, res, next) {
+    if (!req.session.user.sigID) {
+        res.redirect('/petition')
+    } else {
+        next();
+    }
+}
+
+//use for any routes that require being logged in
+//basically every page except registration and login
+const checkForLoggedIn = function (req, res, next) {
+    if (!req.session.user) {
+        res.redirect('/registration')
+    } else {
+        next()
+    }
+}
+
+app.get("/login", (req, res) => {})
+app.get("/registration", (req, res) => {})
+
+app.get("/thankyou", checkForLoggedIn, checkForSigId, (req, res) => {})
+app.get("/signers", checkForLoggedIn, checkForSigId, (req, res) => {})
+app.get("/signers/city", checkForLoggedIn, checkForSigId, (req, res) => {})

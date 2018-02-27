@@ -13,7 +13,9 @@ const {
     addNewUser,
     getPassword,
     getAllSigsFiltered,
-    addUserProfile
+    addUserProfile,
+    getUserProfile,
+    deleteSignature
 } = require("./db");
 
 const cookieSession = require("cookie-session");
@@ -43,13 +45,13 @@ app.use(express.static(__dirname + "/public")); // includes stylesheet, javascri
 
 app.use(function(req, res, next) {
     if (!req.url != "/" || req.url != "/login") {
-        if (!req.session.userID && req.url != "/") {
+        if (!req.session.user && req.url != "/") {
             res.redirect("/");
         } else {
             next();
         }
     } else {
-        if (req.session.userID) {
+        if (req.session.user) {
             res.redirect("/petition"); //or do we make it res.redirect("profile");
         } else {
             next();
@@ -80,25 +82,29 @@ app.post("/", (req, res) => {
         res.render("registration", { error: true });
     } else {
         hashPassword(req.body.password)
-            .then(result => {
-                addNewUser(
+            .then(hashedPass => {
+                return addNewUser(
                     req.body.first,
                     req.body.last,
                     req.body.email,
-                    result
+                    hashedPass
                 );
             })
-            .then(() => {
-                getPassword(req.body.email).then(result => {
-                    req.session.userID = {
-                        id: result.row[0].id,
-                        first: result.row[0].first,
-                        last: result.row[0].last
-                    };
-                });
+            .then(result => {
+                req.session.user = {
+                    id: result.rows[0].id,
+                    first: result.rows[0].first,
+                    last: result.rows[0].last
+                };
             })
             .then(() => {
-                res.redirect("/profile");
+                res.redirect("/petition");
+            })
+            .catch(error => {
+                console.log(
+                    "There was an error in the registration post request: ",
+                    error
+                );
             });
     }
 });
@@ -116,13 +122,13 @@ app.post("/login", (req, res) => {
         }); //need to update that error shows and test.
     } else {
         getPassword(req.body.email).then(result => {
-            req.session.userID = {
+            req.session.user = {
                 id: result.rows[0].id,
                 first: result.rows[0].first,
                 last: result.rows[0].last
             };
-            checkPassword(req.body.password, result.rows[0].password).then(
-                result => {
+            checkPassword(req.body.password, result.rows[0].password)
+                .then(result => {
                     if (result == true) {
                         res.redirect("/petition");
                     } else {
@@ -130,8 +136,13 @@ app.post("/login", (req, res) => {
                             error: true
                         });
                     }
-                }
-            );
+                })
+                .catch(error => {
+                    console.log(
+                        "There was an error in the login post request: ",
+                        error
+                    );
+                });
         });
     }
 });
@@ -147,10 +158,17 @@ app.post("/profile", (req, res) => {
         req.body.age,
         req.body.city,
         req.body.website,
-        req.session.userID
-    ).then(() => {
-        res.redirect("/petition");
-    });
+        req.session.user.id
+    )
+        .then(() => {
+            res.redirect("/petition");
+        })
+        .catch(error => {
+            console.log(
+                "There was an error in the profile post request: ",
+                error
+            );
+        });
 });
 
 //sign petition page
@@ -164,19 +182,30 @@ app.get("/petition", function(req, res) {
 });
 
 app.post("/petition", function(req, res) {
-    if (req.session.signatureID) {
+    if (req.session.user.sigID) {
         res.redirect("/thankyou");
         return;
     }
-    if (!req.body.first || !req.body.last || !req.body.sig) {
+    if (!req.body.sig) {
         res.render("petition", { error: true });
     } else {
-        signPetition(req.body.first, req.body.last, req.body.sig) // this function should make a db query that submits this to the database.
+        signPetition(
+            req.session.user.first,
+            req.session.user.last,
+            req.body.sig,
+            req.session.user.id
+        ) // this function should make a db query that submits this to the database.
             .then(result => {
-                req.session.signatureID = result.rows[0].id;
+                req.session.user.sigID = result.rows[0].id;
             })
             .then(() => {
                 res.redirect("/thankyou");
+            })
+            .catch(error => {
+                console.log(
+                    "There was an error in the petition post request: ",
+                    error
+                );
             });
     }
 });
@@ -184,7 +213,7 @@ app.post("/petition", function(req, res) {
 //thank you page
 
 app.get("/thankyou", (req, res) => {
-    Promise.all([getSig(req.session.signatureID), getTotal()]).then(
+    Promise.all([getSig(req.session.user.sigID), getTotal()]).then(
         ([sigResult, totalResult]) => {
             res.render("thankyou", {
                 sig: sigResult.rows[0].signature,
@@ -193,6 +222,16 @@ app.get("/thankyou", (req, res) => {
         }
     );
 });
+
+//edit profile pages
+
+app.get("/profile/edit", (req, res) => {
+    res.render("edit");
+});
+
+// app.post("/profile/edit", (req, res) => {
+//
+// });
 
 //signers page
 
