@@ -130,7 +130,7 @@ img {
     display: inline-flex;
     width: 90%;
     height: 120px;
-    margin-left: 100px;
+    /* margin-left: 100px; */
 }
 
 .list-box {
