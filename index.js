@@ -21,7 +21,6 @@ const {
     updateUsersTableNoPass
 } = require("./db");
 const cookieSession = require("cookie-session");
-const { secret } = require("./secrets");
 const { hashPassword, checkPassword } = require("./hash");
 const https = require("https");
 const csrf = require("csurf");
