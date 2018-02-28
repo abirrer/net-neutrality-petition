@@ -54,7 +54,7 @@ function getAllSigsFiltered(city) {
         `SELECT users.first, users.last, user_profiles.age FROM users
         JOIN user_profiles
         ON users.id = user_profiles.user_id
-        WHERE city = $1`,
+        WHERE lower(city) = lower($1)`,
         [city]
     );
 }

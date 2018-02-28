@@ -309,11 +309,6 @@ app.post("/profile/edit", (req, res) => {
     }
 });
 
-// app.post("/logout", (req, res) => {
-//     req.session = null;
-//     res.redirect("/login");
-// });
-
 //signers page
 
 app.get("/signers", (req, res) => {
