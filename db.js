@@ -1,7 +1,10 @@
 var spicedPg = require("spiced-pg");
 var { dbUser, dbPass } = require("./secrets");
 
-var db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/signatures`);
+var db = spicedPg(
+    process.env.DATABASE_URL ||
+        `postgres:${dbUser}:${dbPass}@localhost:5432/signatures`
+);
 
 function signPetition(signature, user_id) {
     return db.query(
@@ -34,7 +37,13 @@ function addNewUser(first, last, email, password) {
 }
 
 function getPassword(email) {
-    return db.query(`SELECT * FROM users WHERE email = $1`, [email]);
+    return db.query(
+        `SELECT users.id, users.first, users.last, users.hashed_password, signatures.id AS sig_id FROM users
+        JOIN signatures
+        ON users.id = signatures.user_id
+        WHERE email = $1`,
+        [email]
+    );
 }
 
 function getAllSigsFiltered(city) {

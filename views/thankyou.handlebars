@@ -19,6 +19,7 @@
                 <br><br><a href="/profile/edit">Edit your profile.</a>
                 <br><br>
                 <form name="delete-signature" method="POST">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
                     <input id="delete-button" type="submit" value="Delete your signature.">
                 </form>
             </div>

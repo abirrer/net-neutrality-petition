@@ -22,6 +22,7 @@
                 {{> error}}
             {{/if}}
             <form method="POST">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
                 <input type="text" name="first" placeholder="First Name">
                 <input type="text" name="last" placeholder="Last Name">
                 <input type="email" name="email" placeholder="Email Address">

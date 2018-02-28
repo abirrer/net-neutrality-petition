@@ -364,3 +364,30 @@ app.get("/registration", (req, res) => {})
 app.get("/thankyou", checkForLoggedIn, checkForSigId, (req, res) => {})
 app.get("/signers", checkForLoggedIn, checkForSigId, (req, res) => {})
 app.get("/signers/city", checkForLoggedIn, checkForSigId, (req, res) => {})
+
+
+
+//Notes on csurf
+
+in index.js
+//need to use csrf
+ app.use(cookieSession({ secret: secret, maxAge: 60 * 60 * 12 *14 }))
+ # this is method #1:
+ app.use(csrf());
+
+ #method #2:
+ let csrfProtection = csrf()
+ //then pass this to every app.get which has a form.
+
+//then need to require it
+app.get("/", (res, req) => {
+    res.render('registration', { csrfToken: req.csrfToken() })
+})
+
+in index.handlebars:
+
+<form>
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <input type="text" name="info" placeholder="enter info">
+    <button type="submit" name="button">Send Info</button>
+</form>

@@ -20,12 +20,11 @@ const {
     updateUsersTableWithPass,
     updateUsersTableNoPass
 } = require("./db");
-
 const cookieSession = require("cookie-session");
 const { secret } = require("./secrets");
 const { hashPassword, checkPassword } = require("./hash");
-const bcrypt = require("bcryptjs");
 const https = require("https");
+const csrf = require("csurf");
 
 //set up for handlebars
 
@@ -37,7 +36,7 @@ app.set("view engine", "handlebars");
 //is there another place to put this or is this fine?
 app.use(
     cookieSession({
-        secret: secret,
+        secret: process.env.SESSION_SECRET || require("./secrets").secret,
         maxAge: 1000 * 60 * 60 * 24 * 14 //this means 14 days of complete inactivity
     })
 );
@@ -68,11 +67,13 @@ app.use(
     })
 );
 
+app.use(csrf());
+
 //ROUTES
 
 //homepage/registration page
 app.get("/", (req, res) => {
-    res.render("registration");
+    res.render("registration", { csrfToken: req.csrfToken() });
 });
 
 app.post("/", (req, res) => {
@@ -115,7 +116,7 @@ app.post("/", (req, res) => {
 //login page
 
 app.get("/login", (req, res) => {
-    res.render("login");
+    res.render("login", { csrfToken: req.csrfToken() });
 });
 
 app.post("/login", (req, res) => {
@@ -124,16 +125,20 @@ app.post("/login", (req, res) => {
             error: true
         }); //need to update that error shows and test.
     } else {
-        getPassword(req.body.email).then(result => {
-            req.session.user = {
-                id: result.rows[0].id,
-                first: result.rows[0].first,
-                last: result.rows[0].last
-            };
-            checkPassword(req.body.password, result.rows[0].hashed_password)
+        getPassword(req.body.email).then(getPasswordResult => {
+            checkPassword(
+                req.body.password,
+                getPasswordResult.rows[0].hashed_password
+            )
                 .then(result => {
                     if (result == true) {
-                        res.redirect("/petition");
+                        req.session.user = {
+                            id: getPasswordResult.rows[0].id,
+                            first: getPasswordResult.rows[0].first,
+                            last: getPasswordResult.rows[0].last,
+                            sigID: getPasswordResult.rows[0].sig_id
+                        };
+                        res.redirect("/thankyou");
                     } else {
                         res.render("login", {
                             error: true
@@ -153,7 +158,7 @@ app.post("/login", (req, res) => {
 //create profile page
 
 app.get("/profile", (req, res) => {
-    res.render("profile");
+    res.render("profile", { csrfToken: req.csrfToken() });
 });
 
 app.post("/profile", (req, res) => {
@@ -177,22 +182,22 @@ app.post("/profile", (req, res) => {
 //sign petition page
 
 app.get("/petition", function(req, res) {
-    if (req.cookies.signed) {
+    if (req.session.user.sigID) {
         res.redirect("/thankyou");
         return;
     }
-    res.render("petition");
+    res.render("petition", { csrfToken: req.csrfToken() });
 });
 
 app.post("/petition", function(req, res) {
     if (req.session.user.sigID) {
         res.redirect("/thankyou");
         return;
-    }
-    if (!req.body.sig) {
-        res.render("petition", { error: true });
+    } else if (!req.body.sig) {
+        res.render("petition", { csrfToken: req.csrfToken(), error: true });
     } else {
-        signPetition(req.body.sig, req.session.user.id) // this function should make a db query that submits this to the database.
+        console.log(req.body.sig);
+        signPetition(req.body.sig, req.session.user.id)
             .then(result => {
                 console.log(result);
                 req.session.user.sigID = result.rows[0].id;
@@ -216,7 +221,8 @@ app.get("/thankyou", (req, res) => {
         ([sigResult, totalResult]) => {
             res.render("thankyou", {
                 sig: sigResult.rows[0].signature,
-                num: totalResult.rows[0].count
+                num: totalResult.rows[0].count,
+                csrfToken: req.csrfToken()
             });
         }
     );
@@ -252,35 +258,46 @@ app.get("/profile/edit", (req, res) => {
             password: "",
             age: result.rows[0].age,
             city: result.rows[0].city,
-            website: result.rows[0].website
+            website: result.rows[0].website,
+            csrfToken: req.csrfToken()
         });
     });
 });
 
 app.post("/profile/edit", (req, res) => {
-    //need to set a promise.all to determine when the updateUserProfileTable and updateUsersTable are both complete.  Then send res.redirect("/profile/edit")
-    updateUserProfileTable(
-        req.body.age,
-        req.body.city,
-        req.body.website,
-        req.session.user.id
-    )
-        .then(() => {
-            res.redirect("/profile/edit");
-        })
-        .catch(error => {
-            console.log(
-                "There was an error in the profile edit post request: ",
-                error
-            );
-        });
-    if (!req.body.password) {
-        updateUsersTableNoPass(
-            req.body.first,
-            req.body.last,
-            req.body.email,
+    if (req.body.logout) {
+        req.session = null;
+        res.redirect("/login");
+    } else {
+        let updateUserProfileTablePromise = updateUserProfileTable(
+            req.body.age,
+            req.body.city,
+            req.body.website,
             req.session.user.id
-        )
+        );
+
+        let updateUsersTablePromise = (() => {
+            if (!req.body.password) {
+                return updateUsersTableNoPass(
+                    req.body.first,
+                    req.body.last,
+                    req.body.email,
+                    req.session.user.id
+                );
+            } else {
+                return hashPassword(req.body.password).then(hashedPass => {
+                    return updateUsersTableWithPass(
+                        req.body.first,
+                        req.body.last,
+                        req.body.email,
+                        hashedPass,
+                        req.session.user.id
+                    );
+                });
+            }
+        })();
+
+        Promise.all([updateUserProfileTablePromise, updateUsersTablePromise])
             .then(() => {
                 res.redirect("/profile/edit");
             })
@@ -290,27 +307,13 @@ app.post("/profile/edit", (req, res) => {
                     error
                 );
             });
-    } else {
-        hashPassword(req.body.password).then(hashedPass => {
-            updateUsersTableWithPass(
-                req.body.first,
-                req.body.last,
-                req.body.email,
-                hashedPass,
-                req.session.user.id
-            )
-                .then(() => {
-                    res.redirect("/profile/edit");
-                })
-                .catch(error => {
-                    console.log(
-                        "There was an error in the profile edit post request: ",
-                        error
-                    );
-                });
-        });
     }
 });
+
+// app.post("/logout", (req, res) => {
+//     req.session = null;
+//     res.redirect("/login");
+// });
 
 //signers page
 
@@ -333,4 +336,4 @@ app.get("/signers/:city", (req, res) => {
     });
 });
 
-app.listen(8080, () => console.log("I'm listening."));
+app.listen(process.env.PORT || 8080, () => console.log("I'm listening."));

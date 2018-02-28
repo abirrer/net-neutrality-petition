@@ -13,9 +13,10 @@
         <div id="profile-form">
             <p>Please tell us a little bit more about yourself.</p>
             <form method="POST">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
                 <input type="number" name="age" placeholder="Age">
                 <input type="text" name="city" placeholder="City">
-                <input type="text" name="website" placeholder="Personal Website">
+                <input type="url" name="website" placeholder="Personal Website">
                 <input id="button" type="submit" value="Submit">
             </form>
         </div>

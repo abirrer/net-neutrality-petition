@@ -12,6 +12,7 @@
                 {{> error}}
             {{/if}}
             <form method="POST">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
                 <input type="hidden" name="sig">
                 <div class="signature-box">
                     <canvas width="600" height="100" style="touch-action: none">
