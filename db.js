@@ -1,5 +1,8 @@
 var spicedPg = require("spiced-pg");
-var { dbUser, dbPass } = require("./secrets");
+
+if (!process.env.DATABASE_URL) {
+    var { dbUser, dbPass } = require("./secrets");
+}
 
 var db = spicedPg(
     process.env.DATABASE_URL ||
