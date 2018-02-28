@@ -133,6 +133,14 @@ img {
     margin-left: 100px;
 }
 
+.list-box {
+    /* border: solid; */
+    display: inline-flex;
+    width: 90%;
+    height: 120px;
+    margin-left: 100px;
+}
+
 .signature-box img {
     /* border: solid; */
     height: 100px;
