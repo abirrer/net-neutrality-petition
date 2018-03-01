@@ -78,11 +78,12 @@ function getUserProfile(user_id) {
 
 function updateUserProfileTable(age, city, website, user_id) {
     return db.query(
-        `INSERT INTO user_profile (age, city, website, user_id) {
+        `INSERT INTO user_profiles (age, city, website, user_id)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (user_id)
         DO UPDATE
-        SET age = $1, city = $2, website = $3`,
+        SET age = $1, city = $2, website = $3
+        WHERE user_profiles.user_id = $4`,
         [age || null, city || null, website || null, user_id]
     );
 }

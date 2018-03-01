@@ -223,6 +223,7 @@ app.post("/petition", function(req, res) {
 //thank you page
 
 app.get("/thankyou", (req, res) => {
+    console.log(req.session);
     Promise.all([getSig(req.session.user.sigID), getTotal()]).then(
         ([sigResult, totalResult]) => {
             res.render("thankyou", {
@@ -256,7 +257,6 @@ app.post("/thankyou", (req, res) => {
 
 app.get("/profile/edit", (req, res) => {
     getUserProfile(req.session.user.id).then(result => {
-        console.log(req.session.user);
         res.render("edit", {
             first: result.rows[0].first,
             last: result.rows[0].last,
@@ -271,51 +271,50 @@ app.get("/profile/edit", (req, res) => {
 });
 
 app.post("/profile/edit", (req, res) => {
-    if (req.body.logout) {
-        req.session = null;
-        res.redirect("/login");
-    } else {
-        let updateUserProfileTablePromise = updateUserProfileTable(
-            req.body.age,
-            req.body.city,
-            req.body.website,
-            req.session.user.id
-        );
+    let updateUserProfileTablePromise = updateUserProfileTable(
+        req.body.age,
+        req.body.city,
+        req.body.website,
+        req.session.user.id
+    );
 
-        let updateUsersTablePromise = (() => {
-            if (!req.body.password) {
-                return updateUsersTableNoPass(
+    let updateUsersTablePromise = (() => {
+        if (!req.body.password) {
+            return updateUsersTableNoPass(
+                req.body.first,
+                req.body.last,
+                req.body.email,
+                req.session.user.id
+            );
+        } else {
+            return hashPassword(req.body.password).then(hashedPass => {
+                return updateUsersTableWithPass(
                     req.body.first,
                     req.body.last,
                     req.body.email,
+                    hashedPass,
                     req.session.user.id
                 );
-            } else {
-                return hashPassword(req.body.password).then(hashedPass => {
-                    return updateUsersTableWithPass(
-                        req.body.first,
-                        req.body.last,
-                        req.body.email,
-                        hashedPass,
-                        req.session.user.id
-                    );
-                });
-            }
-        })();
-
-        Promise.all([updateUserProfileTablePromise, updateUsersTablePromise])
-            .then(() => {
-                res.redirect("/profile/edit");
-            })
-            .catch(error => {
-                console.log(
-                    "There was an error in the profile edit post request: ",
-                    error
-                );
             });
-    }
+        }
+    })();
+
+    Promise.all([updateUserProfileTablePromise, updateUsersTablePromise])
+        .then(() => {
+            res.redirect("/profile/edit");
+        })
+        .catch(error => {
+            console.log(
+                "There was an error in the profile edit post request: ",
+                error
+            );
+        });
 });
 
+app.get("/logout", function(req, res) {
+    req.session = null;
+    res.redirect("/login");
+});
 //signers page
 
 app.get("/signers", (req, res) => {
