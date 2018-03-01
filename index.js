@@ -115,6 +115,7 @@ app.post("/", (req, res) => {
                     "There was an error in the registration post request: ",
                     error
                 );
+                res.redirect("/login");
             });
     }
 });

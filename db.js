@@ -23,7 +23,7 @@ function getSig(signatureID) {
 }
 
 function getTotal() {
-    return db.query(`SELECT COUNT (signature) FROM signatures`);
+    return db.query(`SELECT COUNT (user_id) FROM signatures`);
 }
 
 function getAllSigs() {
