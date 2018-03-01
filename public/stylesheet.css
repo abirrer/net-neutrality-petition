@@ -76,7 +76,7 @@ input {
     margin-bottom: 10px;
 }
 
-#button {
+.button {
     width: 150px;
     background-color: rgb(45, 46, 55);
     color: #f6f6f6;
@@ -84,7 +84,7 @@ input {
     font-size: 16px;
 }
 
-#button:hover {
+.button:hover {
     cursor: pointer;
 }
 
@@ -207,7 +207,7 @@ img {
     padding-bottom: 70px;
 }
 
-#edit-form #button {
+#edit-form .button {
     margin-top: 15px;
 }
 
