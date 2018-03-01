@@ -68,6 +68,13 @@ app.use(
 
 app.use(csrf());
 
+// CAN USE THIS INSTEAD OF ADDEING TOKEN IN EACH ROUTE WITH FORM.
+// app.use(function(req, res, next) {
+//     res.locals.csrfToken = req.csfrToken();
+//     res.locals.isLoggedIn = !!req.session.user;
+//     next();
+// });
+
 //ROUTES
 
 //homepage/registration page
@@ -249,7 +256,7 @@ app.post("/thankyou", (req, res) => {
 
 app.get("/profile/edit", (req, res) => {
     getUserProfile(req.session.user.id).then(result => {
-        console.log(result);
+        console.log(req.session.user);
         res.render("edit", {
             first: result.rows[0].first,
             last: result.rows[0].last,

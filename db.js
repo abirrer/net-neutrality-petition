@@ -69,7 +69,7 @@ function addUserProfile(age, city, website, user_id) {
 function getUserProfile(user_id) {
     return db.query(
         `SELECT users.first, users.last, users.email, users.hashed_password, user_profiles.age, user_profiles.city, user_profiles.website FROM users
-        JOIN user_profiles
+        LEFT JOIN user_profiles
         ON users.id = user_profiles.user_id
         WHERE users.id = $1`,
         [user_id]

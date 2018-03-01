@@ -391,3 +391,51 @@ in index.handlebars:
     <input type="text" name="info" placeholder="enter info">
     <button type="submit" name="button">Send Info</button>
 </form>
+
+
+//NOTES ON REDIS INTEGRATION IN PETITION
+
+redis is introducing instability.
+to eliminate all risks.
+
+git branch lists all branch
+Create a new branch - branch off of existing branch.
+Push branch to the remote
+then git checkout -b annabirrerredis origin/annabirrer
+
+if this branch, do all redis work and only redis work.
+Only use this branch when you're using redis.
+
+do a redis setex, then stringify that array in a key.
+
+example code at top of index.js:
+// const cache = require("./cache");
+//
+// cache
+//     .setex(
+//         "goodstuff",
+//         30,
+//         JSON.stringify({
+//             funk: "chicken",
+//             disco: "duck"
+//         })
+//     )
+//     .then(() => cache.get("goodstuff"))
+//     .then(val => {
+//         val = JSON.parse(val);
+//         console.log(val);
+//     });
+
+don't need to do this for signers/:city.
+
+need to invalidate the cache at the right itmes.
+
+Call del any time a new person signs, someone deletes their signature, when someone changes their first/last/age/url/city.
+Delete the key from redis.
+
+When you delete you might want to go get the signers right then and put them in redis, so that it's already there.
+It's called warming the cache.
+don't need to warm the cache, at first just go get the signers.
+
+for Bonus exercise,
+key would be based on email address.
