@@ -439,3 +439,8 @@ don't need to warm the cache, at first just go get the signers.
 
 for Bonus exercise,
 key would be based on email address.
+
+
+//Redis Sessions Notes:
+
+If we do use redis session with heroku, we would need to change the host to be a heroku url || localhost.

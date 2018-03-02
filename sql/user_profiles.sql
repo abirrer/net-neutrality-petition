@@ -7,4 +7,4 @@ CREATE TABLE user_profiles (
     website VARCHAR(200),
     user_id INTEGER UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
